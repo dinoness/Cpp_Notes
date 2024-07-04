@@ -31,7 +31,7 @@ double Sales_data :: avg_price() const
     }
 }
 // 返回this对象，this是调用该函数的结构体的指针
-Sales_data& Sales_data :: combine(const Sales_data &rhs)
+Sales_data& Sales_data::combine(const Sales_data &rhs)
 {
     units_sold += rhs.units_sold;
     revenue += rhs.revenue;
@@ -204,6 +204,28 @@ Screen::pos Screen::fun();
 解释：`MyScreen.move(3, 0)`返回的是修改后的MyScreen，因此再次执行`MyScreen.set('*')`  
 如果要使用量函数，如`const Screen &display(std::ostream &os)`，则最后返回的this指向的是一个常量对象的引用，则之后不能在连续使用move,set等函数，改进方法见上述代码。  
 note：类中函数的参数名尽量不要和其他成员的名称相同，因为类内的函数会对其他成员进行this调用。  
+
+#### 类类型转换
+```C++
+string null_book = "9-9999-9";  // 构造一个string类
+item.combine(null_book);  // 将string类临时转换成Sales_data类型
+```
+类类型转换只能隐性进行一次，猜测是通过调用构造函数来实现的
+```C++
+item.combine("9-9999-9");  // 错误
+item.combine(string("9-9999-9"));  // 正确
+item.combine(Sales_data("9-9999-9"));  // 正确
+```
+**explicit**抑制隐式转换
+`explicit Sales_data(std::istream &);`  
+`explicit Sales_data(const std::string &s): bookNo(s) {};`  
+explicit只能对只有**一个实参**的构造函数有效，且只在声明时使用该前缀。对于有explicit构造函数只能用于直接初始化，不能使用拷贝初始化。    
+```C++
+Sales_data item1(null_book);  // 正确
+Sales_data item2 = null_book;  // 错误
+item.combine(Sales_data(null_book));  // 正确：即使不能隐式转化，但可以进行显示转化
+item.combine(static_cast<Sales_data>(cin));  // 正确，进行强制类型转换
+```
 
 
 #### 聚合类
